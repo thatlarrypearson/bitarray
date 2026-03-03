@@ -1,6 +1,8 @@
 # bitarray/src/bitarray.py
 
 from typing import Self
+from itertools import batched
+from math import ceil
 
 DEFAULT_MAX_INT_BITS = 64
 DEFAULT_BYTE_SIZE = 8
@@ -249,20 +251,78 @@ class bitarray():
         # for bit in (f"{integer:0{int_size}b}")[::-1]:
         #     self.data.append(int(bit))
         tmp_data = ([int(bit) for bit in f"{integer:b}"])[::-1]
+
+        # expand int_size if too small
+        if int_size < len(tmp_data):
+            int_size = ceil(len(tmp_data)/DEFAULT_BYTE_SIZE) * DEFAULT_BYTE_SIZE
+
         self.data = [0 for _ in range(int_size)]
         for i, v in enumerate(tmp_data):
             self.data[i] = v
 
     def byte_to_bits(self, single_byte)->list:
-        bit_list = []
-        for bit_number in range(DEFAULT_BYTE_SIZE):
-            bit_list[bit_number] = single_byte & 1
-            single_byte = single_byte >> 1
+        tmp_data = ([int(bit) for bit in f"{int(single_byte):b}"])[::-1]
+        bit_list = [0 for _ in range(DEFAULT_BYTE_SIZE)]
+        for i, v in enumerate(tmp_data):
+            bit_list[i] = v
 
         return bit_list
 
     def init_from_bytearray(self, bytes: bytearray):
-        for byte in bytes.reverse():
-            for bit in (f"{int(byte):0{DEFAULT_BYTE_SIZE}b}").reverse():
-                self.data.append(int(bit))
+        for byte in bytes[::-1]:
+            for bit in self.byte_to_bits(byte):
+                self.data.append(bit)
 
+    def to_int(self):
+        if not self.data:
+            raise ValueError("bitarray has no bits - can't convert to int")
+
+        base_2_power = 1
+        int_value = 0
+        for bit in self.data:
+            int_value += base_2_power * bit
+            base_2_power *= 2
+
+        return int_value
+
+    def eight_bits_to_int(self, bits:list)->int:
+        base_2_power = 1
+        int_value = 0
+        for bit in bits:
+            int_value += base_2_power * bit
+            base_2_power *= 2
+        return int_value
+
+    def to_bytearray(self):
+        # least significant to most significant
+        chunks = list(batched(self.bits, 8))
+        # reverse list so that most significant comes first - network byte order
+        chunks.reverse()
+        bytearray_value = bytearray()
+        for chunk in chunks:
+            chunk_value = self.eight_bits_to_int(chunk)
+            bytearray_value.append(chunk_value)
+        
+        return bytearray_value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # trick to keep Code from freaking out at the bottom of this file.
+    def thing(self):
+        ...

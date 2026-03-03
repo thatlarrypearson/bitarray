@@ -1,13 +1,15 @@
 # Native Python Bit Array
 
-This ```bitarray``` native Python implementation provides an array of bit values represented as the integers 0 or 1.
+Native python ```bitarray``` implementation supporting bitwise operations on instances as though the entire array was an integer.
+
+This is similar to but not the same as the github package ```bitarray```.
 
 ## **UNDER DEVELOPMENT AND SUBJECT TO CHANGE**
 
 ```bitarray```s behave similar to ```bytearray```s, ```list```s and ```str```s.
 
-- Instanciation:
-  - ```bitarray()``` creates an empty bit array.
+- Instantiation:
+  - ```bitarray(None)``` creates an empty bit array.
   - ```bitarray```s can be instantiated from ```bytearray```s, ```int```s, hex strings or an array of ```int```s.
 
 - Conversions:
@@ -17,7 +19,7 @@ This ```bitarray``` native Python implementation provides an array of bit values
   - ```bitarray.to_hex_str()```
 
 - List-like behavior:
-  - bitarray objects support many standard sequence operations like slicing (including slice assignment and deletion), concatenation, iteration, the ```in``` operator, ```len()```.
+  - ```bitarray``` objects support many standard sequence operations like slicing (including slice assignment and deletion), concatenation, iteration, the ```in``` operator, ```len()```.
 
 - Bitwise Operations:
   - It supports bitwise operators such as ```&```, ```|```, ```^```, ```~```, ```<<```, and ```>>```.
@@ -41,7 +43,7 @@ Use the ```apt``` package management system to install ```git``` on Debian Linux
 apt install git
 ```
 
-For Windows (and Mac) users, [GitHub Desktop](https://desktop.github.com/download/) is a GUI interface I use myself to simplify my development workflow.
+For Windows (and Mac) users, [GitHub Desktop](https://desktop.github.com/download/) is a GUI interface simplifying development workflows.
 
 To install [```uv```](https://github.com/astral-sh/uv), follow these [```uv``` install instructions](https://docs.astral.sh/uv/getting-started/installation/)
 
