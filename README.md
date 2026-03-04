@@ -6,7 +6,7 @@ This is similar to but not the same as the github package ```bitarray```.
 
 ## **UNDER DEVELOPMENT AND SUBJECT TO CHANGE**
 
-```bitarray```s behave similar to ```bytearray```s, ```list```s and ```str```s.
+```bitarray```s have some similarities to ```bytearray```s, ```list```s and ```int```s:
 
 - Instantiation:
   - ```bitarray(None)``` creates an empty bit array.
@@ -24,6 +24,24 @@ This is similar to but not the same as the github package ```bitarray```.
   - It supports bitwise operators such as ```&```, ```|```, ```^```, ```~```, ```<<```, and ```>>```.
 
 ## Usage Examples
+
+```python2
+# Create bitarray from bytearray, int or list
+a = bitarray(bytearray.fromhex("000F"))
+b = bitarray(255)
+c = bitarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,])
+
+# Take a bitarray object and convert it to bytearray, int or list
+a.to_bytearray()
+b.to_bytearray()
+c.to_bytearray()
+a.to_int()
+b.to_int()
+c.to_int()
+a.to_list()
+b.to_list()
+c.to_list()
+```
 
 ## Python Project Software Build and Installation
 
@@ -109,11 +127,22 @@ source .venv/Scripts/activate
 Once the Python virtual environment is activated, run the tests as shown below.  Resolve any errors before continuing.
 
 ```bash
-uv run -m bitarray.tester
+python -m pytest -v .\tests
 ```
 
 Results should look something like the following:
 
 ```bash
+================================================= test session starts =================================================
+platform win32 -- Python 3.13.3, pytest-9.0.2, pluggy-1.6.0 -- src\bitarray\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: src\bitarray
+configfile: pyproject.toml
+collected 3 items
 
+tests/test_01_methods_to_from_int.py::test_instantiation_int PASSED                                              [ 33%]
+tests/test_02_methods_to_from_bytearray.py::test_instantiation_bytearray PASSED                                  [ 66%]
+tests/test_03_methods_to_from_list.py::test_instantiation_bytearray PASSED                                       [100%]
+
+================================================== 3 passed in 0.04s ==================================================
 ```

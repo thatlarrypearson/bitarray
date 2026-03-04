@@ -27,7 +27,7 @@ class bitarray():
             self.init_from_list(bits)
 
         elif isinstance(bits, int):
-            self.init_from_int(bits)
+            self.init_from_int(bits, int_size=max_int_bits)
 
         elif isinstance(bits, bytearray):
             self.init_from_bytearray(bits)
@@ -193,13 +193,16 @@ class bitarray():
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, index:(int | slice)) -> (int | list):
-        if isinstance(index, (slice, int)):
-            # start, stop, step = index.indices(self.__len__())
-            # return [bit for bit in self.data[start, stop, step]]
-            return self.data[index]
+    def __getitem__(self, index:(int | slice)) -> Self:
+        if not isinstance(index, (slice, int)):
+            raise ValueError(f"Invalid Index of type {type(index)}")
 
-        raise ValueError(f"Invalid Index of type {type(index)}")
+        return_value = self.data[index]
+
+        if isinstance(return_value, int):
+            return type(self)(return_value, max_int_bits=len(self.data))
+        
+        return type(self)(return_value)
 
     def __setitem__(self, index:(int | slice), value:(int | list)):
         if isinstance(index, slice) and isinstance(value, list) and hasattr(value, "__iter__"):
@@ -238,7 +241,7 @@ class bitarray():
         self.data.reverse()
 
     def init_from_list(self, bit_list: list):
-        # ensure list fits into byte boundaries
+        # ensure list fits byte boundaries
         ideal_list_size = ceil(len(bit_list)/DEFAULT_BYTE_SIZE) * DEFAULT_BYTE_SIZE
         self.data = [0 for _ in range(ideal_list_size)]
 
@@ -248,8 +251,6 @@ class bitarray():
             self.data[i] = bit
 
     def init_from_int(self, integer: int, int_size=DEFAULT_MAX_INT_BITS):
-        # for bit in (f"{integer:0{int_size}b}")[::-1]:
-        #     self.data.append(int(bit))
         tmp_data = ([int(bit) for bit in f"{integer:b}"])[::-1]
 
         # expand int_size if too small
@@ -333,7 +334,7 @@ class bitarray():
         return bytearray_value
 
     def to_list(self)->list:
-        return self.data
+        return list(self.data)
 
 
 
