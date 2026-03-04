@@ -15,8 +15,7 @@ This is similar to but not the same as the github package ```bitarray```.
 - Conversions:
   - ```bitarray.to_bytearray()```
   - ```bitarray.to_int()```
-  - ```bitarray.to_str()```
-  - ```bitarray.to_hex_str()```
+  - ```bitarray.to_list()```
 
 - List-like behavior:
   - ```bitarray``` objects support many standard sequence operations like slicing (including slice assignment and deletion), concatenation, iteration, the ```in``` operator, ```len()```.

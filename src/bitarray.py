@@ -332,7 +332,8 @@ class bitarray():
 
         return bytearray_value
 
-
+    def to_list(self)->list:
+        return self.data
 
 
 
