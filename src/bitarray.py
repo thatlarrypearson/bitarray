@@ -3,6 +3,7 @@
 from typing import Self
 from itertools import batched
 from math import ceil
+from sys import stderr
 
 DEFAULT_MAX_INT_BITS = 64
 DEFAULT_BYTE_SIZE = 8
@@ -15,7 +16,7 @@ class bitarray():
     # When converting to/from 'bytearray` type values using bitarray.to_bytearray/bitarray.from_bytearray,
     # this implementation assumes network byte order (e.g. network order) is being used.
     # See https://en.wikipedia.org/wiki/Endianness#Networking for a description of network order.
-    data = []
+    data = None
 
     def __init__(
             self,
@@ -37,12 +38,7 @@ class bitarray():
         elif bits is not None:
             raise ValueError(f"Invalid Value Type ({type(bits)}) for bits")
 
-    def init_from_list(self, bits:list):
-        # list must contain only ints with values of 1 or 0
-        for i in bits:
-            if not isinstance(i, int) or i not in [0, 1]:
-                raise ValueError("list elements must be integers with a value of 0 or 1")
-        self.data = bits
+        self.data == []
 
     # +	__add__(self, other)	Addition
     def __add__(self, rhs:(Self | bytearray | int)) -> Self:
@@ -242,10 +238,14 @@ class bitarray():
         self.data.reverse()
 
     def init_from_list(self, bit_list: list):
-        for bit in bit_list:
+        # ensure list fits into byte boundaries
+        ideal_list_size = ceil(len(bit_list)/DEFAULT_BYTE_SIZE) * DEFAULT_BYTE_SIZE
+        self.data = [0 for _ in range(ideal_list_size)]
+
+        for i, bit in enumerate(bit_list):
             if not isinstance(bit, int) or bit not in [0, 1]:
                 raise ValueError("items in list must be either 0 or 1 valued integers")
-            self.data = list(bit_list)
+            self.data[i] = bit
 
     def init_from_int(self, integer: int, int_size=DEFAULT_MAX_INT_BITS):
         # for bit in (f"{integer:0{int_size}b}")[::-1]:
@@ -262,16 +262,23 @@ class bitarray():
 
     def byte_to_bits(self, single_byte)->list:
         tmp_data = ([int(bit) for bit in f"{int(single_byte):b}"])[::-1]
+
         bit_list = [0 for _ in range(DEFAULT_BYTE_SIZE)]
+
         for i, v in enumerate(tmp_data):
             bit_list[i] = v
+
+        if len(bit_list) != 8:
+            ValueError(f"bit_list ({len(bit_list)} value) len != 8")
 
         return bit_list
 
     def init_from_bytearray(self, bytes: bytearray):
+        self.data = []
         for byte in bytes[::-1]:
-            for bit in self.byte_to_bits(byte):
-                self.data.append(bit)
+            self.data.extend(iter(self.byte_to_bits(byte)))
+        if (len(bytes) * 8) != len(self.data):
+            raise ValueError(f"Expecting {(len(bytes) * 8)} bits, got {len(self.data)}")
 
     def to_int(self):
         if not self.data:
@@ -286,23 +293,43 @@ class bitarray():
         return int_value
 
     def eight_bits_to_int(self, bits:list)->int:
+        if len(bits) != 8:
+            raise ValueError(f"more bits than will fit in a byte: {len(bits)} - {bits}")
+
         base_2_power = 1
         int_value = 0
+
         for bit in bits:
             int_value += base_2_power * bit
             base_2_power *= 2
+
+        if int_value > 255:
+            raise ValueError(f"Max int value for byte exceeded: {int_value} - {bits}")
+
         return int_value
 
     def to_bytearray(self):
-        # least significant to most significant
-        chunks = list(batched(self.bits, 8))
-        # reverse list so that most significant comes first - network byte order
-        chunks.reverse()
+        if not self.data:
+            # Either None or [] no items in list then
+            # then return empty bytearray object
+            return bytearray()
+
+        # bytes ordered least significant to most significant
+        chunks = list(batched(self.data, 8))
+
+        if len(chunks) != len(self.data) / 8:
+            raise ValueError(
+                f"chunked bit list ({len(chunks)} items) doesn't match bit list ({len(self.data)} items)"
+            )
+
+        # reverse chunk (list of 8 bits) list so that most significant comes first - network byte order
+        # bytes ordered most significant to least significant
+        chunks = list(chunks)[::-1]
         bytearray_value = bytearray()
+
         for chunk in chunks:
-            chunk_value = self.eight_bits_to_int(chunk)
-            bytearray_value.append(chunk_value)
-        
+            bytearray_value.append(self.eight_bits_to_int(chunk))
+
         return bytearray_value
 
 

@@ -1,10 +1,10 @@
-# bitarray/tests/test_01.py
+# bitarray/tests/test_01_methods_to_from_int.py
 #
-# python -m pytest tests/test_01
+# python -m pytest tests/test_01_methods_to_from_int.py
 #
-# Test coverage for:
-# - instantiation
-# - to_<data-type>() methods
+# Test coverage for methods:
+# - from_int()
+# - to_int()
 
 import pytest
 from bitarray import bitarray
