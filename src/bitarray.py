@@ -16,6 +16,7 @@ class bitarray():
     # When converting to/from 'bytearray` type values using bitarray.to_bytearray/bitarray.from_bytearray,
     # this implementation assumes network byte order (e.g. network order) is being used.
     # See https://en.wikipedia.org/wiki/Endianness#Networking for a description of network order.
+    # See https://rszalski.github.io/magicmethods/#comparisons for a description of magic methods
     data = None
 
     def __init__(
@@ -41,11 +42,16 @@ class bitarray():
         self.data == []
 
     # +	__add__(self, other)	Addition
-    def __add__(self, rhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+    def __add__(self, rhs:(Self | bytearray | int)) -> (Self | bytearray | int):
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't add with {type(rhs)}")
+        return (type(self))(self.to_int() + (type(self))(rhs).to_int())
 
-    def __radd__(self, lhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+    def __radd__(self, lhs:(Self | bytearray | int)) -> (Self | bytearray | int):
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't add with {type(lhs)}")
+        return ((type(self))((type(self)(lhs).to_int()) + self.to_int()))
+
 
     # -	__sub__(self, other)	Subtraction
     def __sub__(self, rhs:(Self | bytearray | int)) -> Self:
@@ -76,10 +82,7 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(rhs):
-            raise ValueError("AND operations require the same number of bits in both values.")
-
-        return all(rhs[i] == self.data[i] for i, v in enumerate(rhs, start=0))
+        return self.to_int() == rhs.to_int()
 
     def __req__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
@@ -88,42 +91,45 @@ class bitarray():
         if not isinstance(lhs, type(self)):
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(lhs):
-            raise ValueError("== operations require the same number of bits in both values.")
-
-        return [self.data[i] & v for i, v in enumerate(lhs, start=0)]
+        return lhs.to_int() == self.to_int()
 
     # <	__lt__(self, other)	Less than
     def __lt__(self, rhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
-
-    def __rlt__(self, lhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
-
-    # &	__and__(self, other)	    Bitwise AND
-    def __and__(self, rhs:(Self | bytearray | int)) -> Self:
         if isinstance(rhs, (bytearray, int)):
-            lhs = (type(self))(rhs)
+            rhs = (type(self))(rhs)
 
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(rhs):
-            raise ValueError("AND operations require the same number of bits in both values.")
+        return self.to_int() < rhs.to_int()
 
-        return [self.data[i] & v for i, v in enumerate(rhs, start=0)]
-
-    def __rand__(self, rhs:(Self | bytearray | int)) -> Self:
+    def __rlt__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
             lhs = (type(self))(lhs)
 
         if not isinstance(lhs, type(self)):
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(lhs):
-            raise ValueError("OR operations require the same number of bits in both values.")
+        return lhs.to_int() < self.to_int()
 
-        return [v & self.data[i] for i, v in enumerate(lhs, start=0)]
+    # &	__and__(self, other)	    Bitwise AND
+    def __and__(self, rhs:(Self | bytearray | int)) -> Self:
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return (type(self))(self.to_int() & rhs.to_int())
+
+    def __rand__(self, lhs:(Self | bytearray | int)) -> Self:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return (type(self))(lhs.to_int() & self.to_int())
 
     # |	__or__(self, other)	        Bitwise OR
     def __or__(self, rhs:(Self | bytearray | int)) -> Self:
@@ -133,22 +139,14 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
         
-        if len(self) != len(lhs):
-            raise ValueError("OR operations require the same number of bits in both values.")
-        
-        return [self.data[i] | v for i, v in enumerate(rhs, start=0)]
+        return (type(self))(self.to_int() | rhs.to_int())
 
     def __ror__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
             lhs = (type(self))(lhs)
 
-        if not isinstance(lhs, type(self)):
-            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+        return (type(self))(lhs.to_int() | self.to_int())
 
-        if len(self) != len(lhs):
-            raise ValueError("OR operations require the same number of bits in both values.")
-
-        return [v | self.data[i] for i, v in enumerate(lhs, start=0)]
 
     # ^	__xor__(self, other)	    Bitwise XOR
     def __xor__(self, rhs:(Self | bytearray | int)) -> Self:
@@ -158,10 +156,7 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(rhs):
-            raise ValueError("XOR operations require the same number of bits in both values.")
-
-        return [v ^ self.data[i] for i, v in enumerate(rhs, start=0)]
+        return (type(self))(self.to_int() ^ rhs.to_int())
 
     def __rxor__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
@@ -170,25 +165,22 @@ class bitarray():
         if not isinstance(lhs, type(self)):
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        if len(self) != len(lhs):
-            raise ValueError("XOR operations require the same number of bits in both values.")
-
-        return [v ^ self.data[i] for i, v in enumerate(lhs, start=0)]
+        return (type(self))(lhs.to_int() ^ self.to_int())
 
     # ~	__invert__(self)	        Bitwise NOT (Unary)
     def __invert__(self) -> Self:
-        return type(self)([1 if n == 0 else 0 for n in self.data])
+        return (type(self))(~self.to_int())
 
     # <<	__lshift__(self, other)	Left Shift
     def __lshift__(self, rhs:int) -> Self:
         if not isinstance(rhs, int):
             raise TypeError("argument 'rhs' must be of type 'int'")
-        new_instance_copy = type(self)(self.data)
-        return (new_instance_copy.data.insert(0, rhs))[:-rhs]
+
+        return (type(self))(self.to_int() << rhs)
 
     # >>	__rshift__(self, other)	Right Shift
     def __rshift__(self, rhs:int) -> Self:
-        return type(self)((self.data[:-rhs]).insert(0, 0))
+        return (type(self))(self.to_int() >> rhs)
 
     def __len__(self):
         return len(self.data)
@@ -200,9 +192,9 @@ class bitarray():
         return_value = self.data[index]
 
         if isinstance(return_value, int):
-            return type(self)(return_value, max_int_bits=len(self.data))
+            return (type(self))(return_value, max_int_bits=len(self.data))
         
-        return type(self)(return_value)
+        return (type(self))(return_value)
 
     def __setitem__(self, index:(int | slice), value:(int | list)):
         if isinstance(index, slice) and isinstance(value, list) and hasattr(value, "__iter__"):
@@ -222,14 +214,23 @@ class bitarray():
         raise ValueError(f"Invalid Value Type ({type(value)}) for 'value' when slicing or indexing")
 
     def __repr__(self)->str:
+        # representation appears as little endian
         return f"{type(self)}: {self.data}"
 
-    def insert(self, index:(int | slice), value:(int | slice)):
+    def __str__(self)->str:
+        # returns big endian string to match network byte order
+        # don't use this for instantiation
+        return "".join(([f"{i}" for i in self.data]).reverse())
+
+    def insert(self, index:(int | slice), value:(bytearray | int | Self)):
         self.data.insert(index, value)
-        return
 
     def append(self, value:(int | list)):
-        self.data.insert(len(self), value)
+        if isinstance(value, int):
+            self.data.append(value)
+        elif isinstance(value, list):
+            for item in value:
+                self.data.append(item)
 
     def extend(self, value:list):
         self.data.extend(value)
@@ -238,7 +239,12 @@ class bitarray():
         del self.data[:]
 
     def reverse(self):
+        # reverses the original list
         self.data.reverse()
+
+    def reversed(self):
+        # reverses a copy
+        return (type(self))(list(self.data.reversed()))
 
     def init_from_list(self, bit_list: list):
         # ensure list fits byte boundaries
