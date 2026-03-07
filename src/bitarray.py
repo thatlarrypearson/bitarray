@@ -75,7 +75,7 @@ class bitarray():
         raise NotImplementedError()
 
     # ==	__eq__(self, other)	Equality
-    def __eq__(self, rhs:(Self | bytearray | int)) -> Self:
+    def __eq__(self, rhs:(Self | bytearray | int)) -> bool:
         if isinstance(rhs, (bytearray, int)):
             rhs = (type(self))(rhs)
 
@@ -84,7 +84,7 @@ class bitarray():
 
         return self.to_int() == rhs.to_int()
 
-    def __req__(self, lhs:(Self | bytearray | int)) -> Self:
+    def __req__(self, lhs:(Self | bytearray | int)) -> bool:
         if isinstance(lhs, (bytearray, int)):
             lhs = (type(self))(lhs)
 
@@ -94,7 +94,7 @@ class bitarray():
         return lhs.to_int() == self.to_int()
 
     # <	__lt__(self, other)	Less than
-    def __lt__(self, rhs:(Self | bytearray | int)) -> Self:
+    def __lt__(self, rhs:(Self | bytearray | int)) -> bool:
         if isinstance(rhs, (bytearray, int)):
             rhs = (type(self))(rhs)
 
@@ -103,7 +103,8 @@ class bitarray():
 
         return self.to_int() < rhs.to_int()
 
-    def __rlt__(self, lhs:(Self | bytearray | int)) -> Self:
+    # __rlt__(self, other) Less than
+    def __rlt__(self, lhs:(Self | bytearray | int)) -> bool:
         if isinstance(lhs, (bytearray, int)):
             lhs = (type(self))(lhs)
 
@@ -111,6 +112,87 @@ class bitarray():
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
         return lhs.to_int() < self.to_int()
+
+    # __gt__(self, other) Greater than
+    def __gt__(self, lhs:(Self | bytearray |int))->bool:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return lhs.to_int() < self.to_int()
+
+    # __rgt__(self, other) Greater than
+    def __rgt__(self, rhs:(Self | bytearray | int))->bool:
+        if isinstance(rhs):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return self.to_int() < rhs.to_int()
+
+    # __le__(self, other): Less than or equal to
+    def __le__(self, rhs:(Self | bytearray | int)) -> bool:
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return self.to_int() <= rhs.to_int()
+
+
+    # __rle__(self, other): Less than or equal to
+    def __rlt__(self, lhs:(Self | bytearray | int)) -> bool:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return self.to_int() <= lhs.to_int()
+
+    # __ge__(self, other): Greater than or equal to
+    def __ge__(self, rhs:(Self | bytearray | int)) -> bool:
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return rhs.to_int() <= self.to_int()
+
+    # __rge__(self, other): Greater than or equal to
+    def __rle__(self, lhs:(Self | bytearray | int)) -> bool:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return self.to_int() <= lhs.to_int()
+
+    # __ne__(self, other): not equal to
+    def __ne__(self, rhs:(Self | bytearray | int)) -> bool:
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return rhs.to_int() != self.to_int()
+
+    # __rne__(self, other): not equal to
+    def __rne__(self, lhs:(Self | bytearray | int)) -> bool:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        return self.to_int() != lhs.to_int()
 
     # &	__and__(self, other)	    Bitwise AND
     def __and__(self, rhs:(Self | bytearray | int)) -> Self:
