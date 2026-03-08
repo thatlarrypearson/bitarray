@@ -215,12 +215,12 @@ class bitarray():
 
     # |	__or__(self, other)	        Bitwise OR
     def __or__(self, rhs:(Self | bytearray | int)) -> Self:
-        if isinstance(rhs, bytearray) or isinstance(lhs, int):
-            lhs = (type(self))(lhs)
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
 
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
-        
+
         return (type(self))(self.to_int() | rhs.to_int())
 
     def __ror__(self, lhs:(Self | bytearray | int)) -> Self:
@@ -232,8 +232,8 @@ class bitarray():
 
     # ^	__xor__(self, other)	    Bitwise XOR
     def __xor__(self, rhs:(Self | bytearray | int)) -> Self:
-        if isinstance(rhs, (bytearray, int)):
-            lhs = (type(self))(rhs)
+        if isinstance(rhs, (type(self), bytearray, int)):
+            rhs = (type(self))(rhs)
 
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
@@ -250,8 +250,12 @@ class bitarray():
         return (type(self))(lhs.to_int() ^ self.to_int())
 
     # ~	__invert__(self)	        Bitwise NOT (Unary)
+    # Because bitarray assumes all integers are unsigned integers regardless of size,
+    # this doesn't work like the Python integers.  That is, the result does not work
+    # like ~ operator in Python which is defined mathematically as -(x+1).
+    # In this implementation, literally, each bit is flipped to its opposite.
     def __invert__(self) -> Self:
-        return (type(self))(~self.to_int())
+        return (type(self))([0 if i == 1 else 1 for i in self.data], max_int_bits=len(self.data))
 
     # <<	__lshift__(self, other)	Left Shift
     def __lshift__(self, rhs:int) -> Self:
