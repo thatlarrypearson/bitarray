@@ -5,7 +5,7 @@ from itertools import batched
 from math import ceil
 from sys import stderr
 
-DEFAULT_MAX_INT_BITS = 64
+DEFAULT_MAX_INT_BITS = 32
 DEFAULT_BYTE_SIZE = 8
 
 class bitarray():
@@ -45,34 +45,154 @@ class bitarray():
     def __add__(self, rhs:(Self | bytearray | int)) -> (Self | bytearray | int):
         if not isinstance(rhs, (type(self), bytearray, int)):
             raise NotImplementedError(f"bitarray doesn't add with {type(rhs)}")
+        if isinstance(rhs, int):
+            return_value = self.to_int() + rhs
+            if return_value >= 0:
+                return ((type(self))(return_value))
+            raise ValueError("Arithmetic operation would yield forbidden negative value.")
         return (type(self))(self.to_int() + (type(self))(rhs).to_int())
 
     def __radd__(self, lhs:(Self | bytearray | int)) -> (Self | bytearray | int):
         if not isinstance(lhs, (type(self), bytearray, int)):
             raise NotImplementedError(f"bitarray doesn't add with {type(lhs)}")
+        if isinstance(lhs, int):
+            return_value = lhs + self.to_int()
+            if return_value >= 0:
+                return ((type(self))(return_value))
+            raise ValueError("Arithmetic operation would yield forbidden negative value.")
         return ((type(self))((type(self)(lhs).to_int()) + self.to_int()))
 
 
     # -	__sub__(self, other)	Subtraction
     def __sub__(self, rhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't subtract with {type(rhs)}")
+
+        if self.to_int() >= (type(self))(rhs).to_int():
+            return (type(self))(self.to_int() - (type(self))(rhs).to_int())
+
+        raise ValueError(
+            "right-hand side greater than left-hand side causing unsupported negative bitarray value"
+        )
 
     def __rsub__(self, lhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't subtract with {type(lhs)}")
+
+        if (type(self))(lhs).to_int() >= self.to_int():
+            return ((type(self))((type(self)(lhs).to_int()) - self.to_int()))
+
+        raise ValueError(
+            "left-hand side greater than right-hand side causing unsupported negative bitarray value"
+        )
+
+    # - __neg__(self) - unary operator
+    def __neg__(self):
+        raise NotImplementedError("bitarray is assumed to be unsigned. Negative values not allowed.")
 
     # *	__mul__(self, other)	Multiplication
     def __mul__(self, rhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't multiply with {type(rhs)}")
+        if isinstance(rhs, int) and rhs < 0:
+            raise ValueError(
+                "negative right-hand side causing unsupported negative bitarray value"
+            )
 
-    def _rmul__(self, lhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+        return (type(self))(self.to_int() * (type(self))(rhs).to_int())
+
+    def __rmul__(self, lhs:(Self | bytearray | int)) -> Self:
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't multiply with {type(lhs)}")
+
+        if isinstance(lhs, int) and lhs < 0:
+            raise ValueError(
+                "negative left-hand side causing unsupported negative bitarray value"
+            )
+
+        return ((type(self))((type(self)(lhs).to_int()) * self.to_int()))
 
     # /	__truediv__(self, other)	Division
-    def __truediv__(self, rhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError
+    # truediv (/): This is the standard division operator (/).
+    # It always performs floating-point division, meaning the
+    # result will be a float, even if both operands are integers
+    # and the result is a whole number.
+    def __truediv__(self, rhs:(Self | bytearray | int)) -> float:
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(rhs)}")
 
-    def __rtruediv__(self, lhs:(Self | bytearray | int)) -> Self:
-        raise NotImplementedError()
+        return (self.to_int() / (type(self))(rhs).to_int())
+
+    def __rtruediv__(self, lhs:(Self | bytearray | int)) -> float:
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(lhs)}")
+
+        return ((type(self)(lhs).to_int()) / self.to_int())
+
+    # // __floordiv__(self, other)
+    # Rounding Behavior: The method should return the largest integer less than or equal
+    # to the mathematical quotient, consistent with Python's standard //
+    # operator which rounds towards negative infinity.
+    def __floordiv__(self, rhs:(Self | bytearray | int)) -> Self:
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(rhs)}")
+
+        if isinstance(rhs, int) and rhs < 0:
+            raise ValueError(
+                "negative right-hand side causing unsupported negative bitarray value"
+            )
+
+        return (type(self))(self.to_int() // (type(self))(rhs).to_int())
+
+    def __rfloordiv__(self, lhs:(Self | bytearray | int)) -> Self:
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(lhs)}")
+
+        if isinstance(lhs, int) and lhs < 0:
+            raise ValueError(
+                "negative left-hand side causing unsupported negative bitarray value"
+            )
+
+        return ((type(self))((type(self)(lhs).to_int()) // self.to_int()))
+
+    # % __mod__(self, other)
+    # returns the remainder when an integer divides an integer
+    def __mod__(self, rhs) -> Self:
+        if not isinstance(rhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(rhs)}")
+
+        return (type(self))(self.to_int() % (type(self))(rhs).to_int())
+
+    def __rmod__(self, lhs) -> Self:
+        if not isinstance(lhs, (type(self), bytearray, int)):
+            raise NotImplementedError(f"bitarray doesn't divide with {type(lhs)}")
+
+        return ((type(self))((type(self)(lhs).to_int()) % self.to_int()))
+
+    # ** __pow__(self, other) 
+    def __pow__(self, rhs:(Self | bytearray | int))->Self:
+        if isinstance(rhs, (bytearray, int)):
+            rhs = (type(self))(rhs)
+
+        if not isinstance(rhs, type(self)):
+            raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        if isinstance(rhs, int) and rhs < 0:
+            raise ValueError("Negative power (**) operator cannot be used with bitarray().")
+
+        return (type(self))(self.to_int() ** (rhs).to_int())
+
+    def __rpow__(self, lhs:(Self | bytearray | int))->Self:
+        if isinstance(lhs, (bytearray, int)):
+            lhs = (type(self))(lhs)
+
+        if not isinstance(lhs, type(self)):
+            raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
+
+        if isinstance(lhs, int) and lhs < 0:
+            raise ValueError("Negative operand cannot be used with bitarray() operator (**).")
+
+        return (type(self))(self.to_int() ** (lhs).to_int())
 
     # ==	__eq__(self, other)	Equality
     def __eq__(self, rhs:(Self | bytearray | int)) -> bool:
@@ -290,14 +410,14 @@ class bitarray():
             self.data[index] = value
             return
 
-        raise ValueError(f"Invalid Value Type ({type(value)}) for 'value' when slicing or indexing")
+        raise TypeError(f"Invalid Value Type ({type(value)}) for 'value' when slicing or indexing")
 
     def __delitem__(self, index:(int | slice)):
         if isinstance(index, (slice, int)):
             del self.data[index]
             return
 
-        raise ValueError(f"Invalid Value Type ({type(value)}) for 'value' when slicing or indexing")
+        raise TypeError(f"Invalid Value Type ({type(value)}) for 'value' when slicing or indexing")
 
     def __repr__(self)->str:
         # representation appears as little endian
@@ -308,15 +428,38 @@ class bitarray():
         # don't use this for instantiation
         return "".join(([f"{i}" for i in self.data]).reverse())
 
-    def insert(self, index:(int | slice), value:(bytearray | int | Self)):
-        self.data.insert(index, value)
+    def insert(self, index:int, value:int):
+        if not isinstance(value, int):
+            raise TypeError(f"value type ({type(value)}) not an int")
 
-    def append(self, value:(int | list)):
-        if isinstance(value, int):
+        if value in {0, 1}:
+            self.data.insert(index, value)
+        else:
+            raise ValueError(f"value ({value}) not 0 or 1")
+
+    def append(self, value:(int | list | bytearray)):
+        if isinstance(value, int) and value in {0, 1}:
             self.data.append(value)
-        elif isinstance(value, list):
+            return
+        
+        if isinstance(value, int):
+            raise ValueError(f"append value ({value}) not 0 or 1")
+
+        if isinstance(value, bytearray):
+            value = bitarray(value).data
+        
+        if isinstance(value, type(self)):
+            value = value.data
+
+        if isinstance(value, list):
             for item in value:
-                self.data.append(item)
+                if isinstance(item, int) and item in {0, 1}:
+                    self.data.append(item)
+                else:
+                    raise ValueError(f"list item ({item}) not 0 or 1 integer value")
+            return
+
+        raise TypeError(f"type {type(value)} not an int or list with values 0 or 1")
 
     def extend(self, value:list):
         self.data.extend(value)
@@ -330,7 +473,7 @@ class bitarray():
 
     def reversed(self):
         # reverses a copy
-        return (type(self))(list(self.data.reversed()))
+        return (type(self))(list(self.data[::-1]))
 
     def init_from_list(self, bit_list: list):
         # ensure list fits byte boundaries

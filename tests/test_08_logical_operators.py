@@ -36,8 +36,6 @@ def test_logical_operators():
         bytearray.fromhex("F000000000000000000000")
     ) == 0xF000000000000000000000
 
-
-
     assert bitarray(2**3) | bitarray(2**1) == 2**3 + 2**1
     assert bitarray(2**3 + 2**1) | bitarray(2**1) == 2**3 + 2**1
     assert bitarray(2**10 + 2**5) | bitarray(2**10) == 2**10 + 2**5
@@ -90,3 +88,48 @@ def test_logical_operators():
     assert ~bitarray(0x0F, max_int_bits=8) == 0xF0
 
     assert ~bitarray(0x00FF, max_int_bits=16) == 0xFF00
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) << 2.5
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) >> 2.5
+
+    with pytest.raises(TypeError):
+        2.5 << bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        2.5 >> bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) & 2.5
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) & 2.5
+
+    with pytest.raises(TypeError):
+        2.5 & bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        2.5 & bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) | 2.5
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) | 2.5
+
+    with pytest.raises(AttributeError):
+        2.5 | bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) ^ 2.5
+
+    with pytest.raises(TypeError):
+        bitarray(0x000001) ^ 2.5
+
+    with pytest.raises(TypeError):
+        2.5 ^ bitarray(0x000001)
+
+    with pytest.raises(TypeError):
+        2.5 ^ bitarray(0x000001)
