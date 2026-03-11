@@ -127,22 +127,45 @@ source .venv/Scripts/activate
 Once the Python virtual environment is activated, run the tests as shown below.  Resolve any errors before continuing.
 
 ```bash
+# Windows PowerShell
 python -m pytest -v .\tests
+
+# Linux/Mac bash Shell
+python -m pytest -v ./tests
 ```
 
 Results should look something like the following:
 
-```bash
-================================================= test session starts =================================================
-platform win32 -- Python 3.13.3, pytest-9.0.2, pluggy-1.6.0 -- src\bitarray\.venv\Scripts\python.exe
+```powershell
+(bitarray) PS bitarray> python -m pytest -vv .\tests
+================================== test session starts ===================================
+platform win32 -- Python 3.13.3, pytest-9.0.2, pluggy-1.6.0 -- bitarray\.venv\Scripts\python.exe
 cachedir: .pytest_cache
-rootdir: src\bitarray
+rootdir: bitarray
 configfile: pyproject.toml
-collected 3 items
+collected 10 items
 
-tests/test_01_methods_to_from_int.py::test_instantiation_int PASSED                                              [ 33%]
-tests/test_02_methods_to_from_bytearray.py::test_instantiation_bytearray PASSED                                  [ 66%]
-tests/test_03_methods_to_from_list.py::test_instantiation_bytearray PASSED                                       [100%]
+tests/test_01_methods_to_from_int.py::test_instantiation_int
+PASSED                                                                              [ 10%]
+tests/test_02_methods_to_from_bytearray.py::test_instantiation_bytearray
+PASSED                                                                              [ 20%]
+tests/test_03_methods_to_from_list.py::test_instantiation_bytearray
+PASSED                                                                              [ 30%]
+tests/test_04_slicing.py::test_slicing
+PASSED                                                                              [ 40%]
+tests/test_05_add_eq.py::test_add_eq
+PASSED                                                                              [ 50%]
+tests/test_06_comparison.py::test_comparison
+PASSED                                                                              [ 60%]
+tests/test_07_shifting.py::test_shifting
+PASSED                                                                              [ 70%]
+tests/test_08_logical_operators.py::test_logical_operators
+PASSED                                                                              [ 80%]
+tests/test_09_arithmetic_operators.py::test_arithmetic_operators
+PASSED                                                                              [ 90%]
+tests/test_10_list_operations.py::test_list_operations
+PASSED                                                                              [100%]
 
-================================================== 3 passed in 0.04s ==================================================
+============================== 10 passed in 0.06s ================================++++====
+(bitarray) PS bitarray>
 ```
