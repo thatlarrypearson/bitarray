@@ -421,12 +421,12 @@ class bitarray():
 
     def __repr__(self)->str:
         # representation appears as little endian
-        return f"{type(self)}: {self.data}"
+        return f"bitarray: {self.data}"
 
     def __str__(self)->str:
         # returns big endian string to match network byte order
         # don't use this for instantiation
-        return "".join(([f"{i}" for i in self.data]).reverse())
+        return "".join(([f"{i}" for i in self.data[::-1]]))
 
     def insert(self, index:int, value:int):
         if not isinstance(value, int):
