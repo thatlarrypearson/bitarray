@@ -377,3 +377,7 @@ PASSED                                                                          
 ============================== 10 passed in 0.06s ================================++++====
 (bitarray) PS bitarray>
 ```
+
+## License
+
+Copyright 2026 Larry Pearson all rights reserved.  This software is available under the [MIT License](License.md).
