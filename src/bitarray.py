@@ -24,6 +24,8 @@ class bitarray():
             bits:(Self | list | int | bytearray | str),
             max_int_bits:int=DEFAULT_MAX_INT_BITS
         ):
+        self.max_int_bits = max_int_bits
+
         if isinstance(bits, list):
             self.init_from_list(bits)
 
@@ -389,7 +391,7 @@ class bitarray():
         return (type(self))(self.to_int() >> rhs)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data) if self.data else 0
 
     def __getitem__(self, index:(int | slice)) -> Self:
         if not isinstance(index, (slice, int)):
@@ -428,14 +430,28 @@ class bitarray():
         # don't use this for instantiation
         return "".join(([f"{i}" for i in self.data[::-1]]))
 
-    def insert(self, index:int, value:int):
-        if not isinstance(value, int):
-            raise TypeError(f"value type ({type(value)}) not an int")
+    def insert(self, index:int, value:(Self | bytearray | int)):
+        if isinstance(value, int):
+            if value in {0, 1}:
+                self.data.insert(index, value)
+                return
 
-        if value in {0, 1}:
+            raise ValueError(f"append value ({value}) not 0 or 1")
+
+        if isinstance(value, bytearray):
+            value = bitarray(value).data
+
+        if isinstance(value, type(self)):
+            value = value.data
+
+        if isinstance(value, list):
+            for item in value:
+                if not isinstance(item, int) or item not in {0, 1}:
+                    raise ValueError(f"list item ({item}) not 0 or 1 integer value")
             self.data.insert(index, value)
-        else:
-            raise ValueError(f"value ({value}) not 0 or 1")
+            return
+
+        raise TypeError(f"type {type(value)} not 0 or 1 OR a list containing values 0 or 1")
 
     def append(self, value:(int | list | bytearray)):
         if isinstance(value, int) and value in {0, 1}:
@@ -462,10 +478,23 @@ class bitarray():
         raise TypeError(f"type {type(value)} not an int or list with values 0 or 1")
 
     def extend(self, value:list):
-        self.data.extend(value)
+        if isinstance(value, type(self)):
+            for item in value.data:
+                self.data.append(item)
+            return
+        elif isinstance(value, list):
+            for item in list:
+                if item in (0, 1,):
+                    self.data.append(item)
+                else:
+                    raise ValueError(
+                        f"Unable to extend {type(self)} using list value {type(item)}: {item}"
+                    )
+            return
+        raise TypeError("unable to extend {type(self)} using {type(value)}")
 
     def clear(self):
-        del self.data[:]
+        self.data = []
 
     def reverse(self):
         # reverses the original list
@@ -473,8 +502,10 @@ class bitarray():
 
     def reversed(self):
         # reverses a copy
-        return (type(self))(list(self.data[::-1]))
-
+        copy = (type(self))(self, self.max_int_bits)
+        copy.reverse()
+        return copy
+   
     def init_from_list(self, bit_list: list):
         # ensure list fits byte boundaries
         ideal_list_size = ceil(len(bit_list)/DEFAULT_BYTE_SIZE) * DEFAULT_BYTE_SIZE

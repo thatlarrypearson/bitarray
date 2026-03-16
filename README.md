@@ -2,46 +2,254 @@
 
 Native python ```bitarray``` implementation supporting bitwise operations on instances as though the entire array was an integer.
 
-This is similar to but not the same as the github package ```bitarray```.
+This is similar to but not the same as the PYPI/github package [```bitarray```](https://pypi.org/project/bitarray/).
 
 ## **UNDER DEVELOPMENT AND SUBJECT TO CHANGE**
 
 ```bitarray```s have some similarities to ```bytearray```s, ```list```s and ```int```s:
 
 - Instantiation:
-  - ```bitarray(None)``` creates an empty bit array.
-  - ```bitarray```s can be instantiated from ```bytearray```s, ```int```s, hex strings or an array of ```int```s.
 
-- Conversions:
-  - ```bitarray.to_bytearray()```
-  - ```bitarray.to_int()```
-  - ```bitarray.to_list()```
+## Instantiation from ```bytearray``` objects
 
-- List-like behavior:
-  - ```bitarray``` objects support many standard sequence operations like slicing (including slice assignment and deletion), concatenation, iteration, the ```in``` operator, ```len()```.
+- Need ```bytearray``` object
+
+```python
+from bitarray import bitarray
+
+byte_array = bytearray.fromhex("F0F0")
+byte_array
+```
+
+- Response showing ```bytearray``` object value.
+
+```python
+bytearray(b'\xf0\xf0')
+```
+
+- ```bitarray``` from ```bytearray``` object
+
+```python
+bit_array = bitarray(byte_array)
+bit_array
+```
+
+- Response showing ```bitarray``` object value.
+  - first from ```__repr__()``` and second from ```__str__()```
+
+```python
+<class 'bitarray.bitarray'>: [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1]
+>>>
+str(bit_array)
+'1111000011110000'
+```
+
+Note the difference between the two values.  ```__repr__()``` shows the object's internal representation.  Internal representation is done in little-endian style.  That is, the first bit in the list is the least significant bit.  The last bit in the list is the most significant.
+
+```__str__()``` shows the representation as big-endian.  The first bit is the most significant and the last bit is the least significant.  This is more in line with ```bytearray``` representation.
+
+## Instantiation from ```int``` or integer values
+
+```python
+from bitarray import bitarray
+
+# hex representation
+bit_array(0xFF)
+# integer representation
+bit_array(255)
+```
+
+Responses to the above would both look the same since ```0xFF``` equals ```255```.
+
+```python
+>>> from bitarray import bitarray
+>>> bitarray(255)
+bitarray: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+>>>
+>>> bitarray(0xFF)
+bitarray: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+>>>
+```
+
+**```bitarray``` objects do not support negative values.**  Think of them as being extremely large unsigned integers.  In Python 3.0 and above, any integer can be as large as desired up to the underlying hardware and operating system limits.
+
+```python
+from bitarray import bitarray
+
+len(bitarray(2**(2**1000)))
+```
+
+These results to the above were achieved on a computer with 64 GB RAM.  The last seen memory usage by the Python process showed it had allocated over 52 BG RAM.  The program ran at most another hour before crashing.
+
+```python
+>>> from bitarray import bitarray
+>>> len(bitarray(2**(2**1000)))
+Traceback (most recent call last):
+  File "<python-input-4>", line 1, in <module>
+    len(bitarray(2**(2**1000)))
+                 ~^^~~~~~~~~~
+MemoryError
+>>> 2**1000
+10715086071862673209484250490600018105614048117055336074437503883703510511249361224931983788156958581275946729175531468251871452856923140435984577574698574803934567774824230985421074605062371141877954182153046474983581941267398767559165543946077062914571196477686542167660429831652624386837205668069376
+>>>>>> len(bitarray(2**1000))
+1008
+>>> len(bitarray(2**1000))/8
+126.0
+>>>
+```
+
+After the MemoryError, just to see how big ```2**1000``` is, the result of those calculations are shown above.  There were 1,008 bits and 126 bytes.  That would be a very big integer on its own.  Note that the number of bits in a ```bitarray``` object instantiation may include padding bits to bring them to byte boundaries.  That is, an object that is created by 6 bits will be extended to 8 bits so that the instantiation finishes on a byte boundary.
+
+## Instantiation from ```bitarray``` objects
+
+The best way to copy a ```bitarray``` object is to use it to create a new ```bitarray``` object as shown below.  This allows the new ```bitarray``` to be changed without changing the original object.
+
+```python
+from bitarray import bitarray
+
+original_bitarray = bitarray(0xFF)
+
+copy_bitarray = bitarray(original_bitarray)
+```
+
+## Converting ```bitarray``` objects to integers
+
+```python
+from bitarray import bitarray
+
+bitarray_object = bitarray(255)
+
+integer_value = bitarray_object.to_int()
+```
+
+## Converting ```bitarray``` objects to ```bytearray```
+
+```python
+from bitarray import bitarray
+
+bitarray_object = bitarray(bytearray.fromhex("FFEEDDCCBBAA99887766554433221100"))
+
+bytearray_value = bitarray_object.to_bytearray()
+
+print(bytearray_value.hex())
+
+integer_value = bitarray_object.to_int()
+
+print(f"integer_value:x")
+```
+
+## Comparison operators and ```bitarray``` objects
+
+```bitarray``` objects can be compared to ```bytearray``` objects, integers and ```bitarray``` objects.
+
+```python
+form bitarray import bitarray
+
+bitarray_value = 255
+
+low_bitarray_value   = bitarray(10)
+equal_bitarray_value = bitarray(bytearray.fromhex("FF"))
+high_bitarray_value  = bitarray(bytearray.fromhex("FFFFFFFFFFFFFFFFFFFFFF"))
+
+print(f"low_bitarray_value > bitarray_value: {low_bitarray_value > bitarray_value}")
+print(f"low_bitarray_value < bitarray_value: {low_bitarray_value > bitarray_value}")
+print(f"low_bitarray_value >= bitarray_value: {low_bitarray_value >= bitarray_value}")
+print(f"low_bitarray_value <= bitarray_value: {low_bitarray_value >= bitarray_value}")
+print(f"low_bitarray_value != bitarray_value: {low_bitarray_value != bitarray_value}")
+print(f"low_bitarray_value == bitarray_value: {low_bitarray_value == bitarray_value}")
+
+print(f"equal_bitarray_value > bitarray_value: {equal_bitarray_value > bitarray_value}")
+print(f"equal_bitarray_value < bitarray_value: {equal_bitarray_value < bitarray_value}")
+print(f"equal_bitarray_value >= bitarray_value: {equal_bitarray_value >= bitarray_value}")
+print(f"equal_bitarray_value <= bitarray_value: {equal_bitarray_value <= bitarray_value}")
+print(f"equal_bitarray_value != bitarray_value: {equal_bitarray_value != bitarray_value}")
+print(f"equal_bitarray_value == bitarray_value: {equal_bitarray_value == bitarray_value}")
+
+print(f"high_bitarray_value > bitarray_value: {high_bitarray_value > bitarray_value}")
+print(f"high_bitarray_value < bitarray_value: {high_bitarray_value < bitarray_value}")
+print(f"high_bitarray_value >= bitarray_value: {high_bitarray_value >= bitarray_value}")
+print(f"high_bitarray_value <= bitarray_value: {high_bitarray_value <= bitarray_value}")
+print(f"high_bitarray_value != bitarray_value: {high_bitarray_value != bitarray_value}")
+print(f"high_bitarray_value == bitarray_value: {high_bitarray_value == bitarray_value}")
+```
+
+## Using ```bitarray``` as a list
+
+Many of the capabilities made available by lists are also available through ```bitarray```.
+
+Some examples are shown below:
+
+```python
+from bitarray import bitarray
+
+print(f"0 in bitarray(0xFFFFFFFF): {0 in bitarray(0xFFFFFFFF)}")
+print(f"1 in bitarray(0xFFFFFFFF): {1 in bitarray(0xFFFFFFFF)}")
+
+print(f"len(bitarray(0xFF))): {len(bitarray(0xFF))}")
+print(f"len(bitarray(0xFFFFFFFF)): {len(bitarray(0xFFFFFFFF))}")
+
+# in-place operations
+#   - __setitem__(self, key, value) - in-place changing value
+value = bitarray(0xFF, max_int_bits=8)
+value[0] = 0
+value[1] = 0
+value[2] = 0
+value[3] = 0
+print(f"value: 0x{value.to_int():x}")
+
+#   - __delitem__(self, key) - in-place deleting
+value = bitarray(0xFF, max_int_bits=8)
+print(f"del value[0:4]: {value}")
+del value[0:4]
+
+value = bitarray(0xFF, max_int_bits=8)
+del value[-4]
+print(f"del value[-4]: {value}")
+
+#   - extend(iterable) - in-place extending
+value = bitarray(0XFF, max_int_bits=8)
+value.extend(bitarray(0x11, max_int_bits=8))
+
+#   - clear() - in-place clearing
+value = bitarray(0XFF)
+len(value)
+value.clear()
+len(value)
+
+# NOTE: len(value.clear()) raises TypeError: object of type 'NoneType' has no len()
+
+#   - insert(index, element) - in place insert
+value = bitarray(0xFF, max_int_bits=8)
+len(value)
+value.insert(0, bitarray(0xFF, max_int_bits=8))
+len(value)
+
+#   - append(element) - in-place append
+value = bitarray(0, max_int_bits=8)
+len(value)
+value.to_int()
+value.append(bitarray(0xFF, max_int_bits=8))
+len(value)
+value.to_int()
+
+#   - reverse() - in-place reversal of elements
+value = bitarray(0x0123456789ABCDEF)
+value.to_bytearray().hex()
+value.reverse()
+value.to_bytearray().hex()
+
+#   - reversed() - returns a reversed bitarray
+value = bitarray(0x0123456789ABCDEF)
+reverse_value = value.reversed()
+value.to_bytearray().hex()
+reverse_value.to_bytearray().hex()
+reverse_reverse_value = reverse_value.reversed()
+reverse_reverse_value.to_bytearray().hex()
+```
 
 - Bitwise Operations:
   - It supports bitwise operators such as ```&```, ```|```, ```^```, ```~```, ```<<```, and ```>>```.
 
-## Usage Examples
-
-```python2
-# Create bitarray from bytearray, int or list
-a = bitarray(bytearray.fromhex("000F"))
-b = bitarray(255)
-c = bitarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,])
-
-# Take a bitarray object and convert it to bytearray, int or list
-a.to_bytearray()
-b.to_bytearray()
-c.to_bytearray()
-a.to_int()
-b.to_int()
-c.to_int()
-a.to_list()
-b.to_list()
-c.to_list()
-```
 
 ## Python Project Software Build and Installation
 
