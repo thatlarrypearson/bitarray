@@ -54,9 +54,9 @@ Note the difference between the two values.  ```__repr__()``` shows the object's
 from bitarray import bitarray
 
 # hex representation
-bit_array(0xFF)
+bitarray(0xFF)
 # integer representation
-bit_array(255)
+bitarray(255)
 ```
 
 Responses to the above would both look the same since ```0xFF``` equals ```255```.
@@ -108,8 +108,8 @@ The best way to copy a ```bitarray``` object is to use it to create a new ```bit
 from bitarray import bitarray
 
 original_bitarray = bitarray(0xFF)
-
 copy_bitarray = bitarray(original_bitarray)
+original_bitarray == copy_bitarray
 ```
 
 ## Converting ```bitarray``` objects to integers
@@ -135,7 +135,7 @@ print(bytearray_value.hex())
 
 integer_value = bitarray_object.to_int()
 
-print(f"integer_value:x")
+print(f"{integer_value:x}")
 ```
 
 ## Comparison operators and ```bitarray``` objects
@@ -211,12 +211,11 @@ value = bitarray(0XFF, max_int_bits=8)
 value.extend(bitarray(0x11, max_int_bits=8))
 
 #   - clear() - in-place clearing
+#   NOTE: len(value.clear()) raises TypeError: object of type 'NoneType' has no len()
 value = bitarray(0XFF)
 len(value)
 value.clear()
 len(value)
-
-# NOTE: len(value.clear()) raises TypeError: object of type 'NoneType' has no len()
 
 #   - insert(index, element) - in place insert
 value = bitarray(0xFF, max_int_bits=8)
@@ -247,9 +246,29 @@ reverse_reverse_value = reverse_value.reversed()
 reverse_reverse_value.to_bytearray().hex()
 ```
 
-- Bitwise Operations:
-  - It supports bitwise operators such as ```&```, ```|```, ```^```, ```~```, ```<<```, and ```>>```.
+## Using bitwise and logical operators on ```bitarray```
 
+```python
+from bitarray import bitarray
+
+# <<	__lshift__(self, rhs:int)	Left Shift
+bitarray(0x0F, max_int_bits=8) << 4
+
+# >>	__rshift__(self, rhs:int)	Right Shift
+bitarray(0xF0, max_int_bits=8) >> 4
+
+#  & and (__and__/__rand__) 
+bitarray(0xF1, max_int_bits=8) & bitarray(0x01, max_int_bits=8)
+
+#  | or  (__or__/__ror__)
+bitarray(0xF1, max_int_bits=8) | bitarray(0x01, max_int_bits=8)
+
+#  ^ xor (__xor__/__rxor__)
+bitarray(0xF1, max_int_bits=8) ^ bitarray(0x01, max_int_bits=8)
+
+#  ~ not (__invert__)
+~bitarray(0xF0, max_int_bits=8)
+```
 
 ## Python Project Software Build and Installation
 

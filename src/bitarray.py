@@ -36,12 +36,14 @@ class bitarray():
             self.init_from_bytearray(bits)
 
         elif isinstance(bits, type(self)):
+            self.max_int_bits = bits.max_int_bits
             self.data = list(bits.data)
 
         elif bits is not None:
             raise ValueError(f"Invalid Value Type ({type(bits)}) for bits")
 
-        self.data == []
+        else:
+            self.data == []
 
     # +	__add__(self, other)	Addition
     def __add__(self, rhs:(Self | bytearray | int)) -> (Self | bytearray | int):
@@ -324,7 +326,7 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        return (type(self))(self.to_int() & rhs.to_int())
+        return (type(self))(self.to_int() & rhs.to_int(), max_int_bits=self.max_int_bits)
 
     def __rand__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
@@ -333,7 +335,7 @@ class bitarray():
         if not isinstance(lhs, type(self)):
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        return (type(self))(lhs.to_int() & self.to_int())
+        return (type(self))(lhs.to_int() & self.to_int(), max_int_bits=self.max_int_bits)
 
     # |	__or__(self, other)	        Bitwise OR
     def __or__(self, rhs:(Self | bytearray | int)) -> Self:
@@ -343,13 +345,13 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        return (type(self))(self.to_int() | rhs.to_int())
+        return (type(self))(self.to_int() | rhs.to_int(), max_int_bits=self.max_int_bits)
 
     def __ror__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
             lhs = (type(self))(lhs)
 
-        return (type(self))(lhs.to_int() | self.to_int())
+        return (type(self))(lhs.to_int() | self.to_int(), max_int_bits=self.max_int_bits)
 
 
     # ^	__xor__(self, other)	    Bitwise XOR
@@ -360,7 +362,7 @@ class bitarray():
         if not isinstance(rhs, type(self)):
             raise TypeError(f"argument 'rhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        return (type(self))(self.to_int() ^ rhs.to_int())
+        return (type(self))(self.to_int() ^ rhs.to_int(), max_int_bits=self.max_int_bits)
 
     def __rxor__(self, lhs:(Self | bytearray | int)) -> Self:
         if isinstance(lhs, (bytearray, int)):
@@ -369,7 +371,7 @@ class bitarray():
         if not isinstance(lhs, type(self)):
             raise TypeError(f"argument 'lhs' must be one of '{type(self)}' or 'int' or 'bytearray'")
 
-        return (type(self))(lhs.to_int() ^ self.to_int())
+        return (type(self))(lhs.to_int() ^ self.to_int(), max_int_bits=self.max_int_bits)
 
     # ~	__invert__(self)	        Bitwise NOT (Unary)
     # Because bitarray assumes all integers are unsigned integers regardless of size,
@@ -384,11 +386,11 @@ class bitarray():
         if not isinstance(rhs, int):
             raise TypeError("argument 'rhs' must be of type 'int'")
 
-        return (type(self))(self.to_int() << rhs)
+        return (type(self))(self.to_int() << rhs, max_int_bits=self.max_int_bits)
 
     # >>	__rshift__(self, other)	Right Shift
     def __rshift__(self, rhs:int) -> Self:
-        return (type(self))(self.to_int() >> rhs)
+        return (type(self))(self.to_int() >> rhs, max_int_bits=self.max_int_bits)
 
     def __len__(self):
         return len(self.data) if self.data else 0
@@ -483,7 +485,7 @@ class bitarray():
                 self.data.append(item)
             return
         elif isinstance(value, list):
-            for item in list:
+            for item in value:
                 if item in (0, 1,):
                     self.data.append(item)
                 else:
@@ -502,7 +504,7 @@ class bitarray():
 
     def reversed(self):
         # reverses a copy
-        copy = (type(self))(self, self.max_int_bits)
+        copy = (type(self))(self, max_int_bits=self.max_int_bits)
         copy.reverse()
         return copy
    
@@ -546,6 +548,7 @@ class bitarray():
             self.data.extend(iter(self.byte_to_bits(byte)))
         if (len(bytes) * 8) != len(self.data):
             raise ValueError(f"Expecting {(len(bytes) * 8)} bits, got {len(self.data)}")
+        self.max_int_bits = len(self.data)
 
     def to_int(self):
         if not self.data:

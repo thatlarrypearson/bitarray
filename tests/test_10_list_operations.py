@@ -51,8 +51,9 @@ def test_list_operations():
     b.insert(0, 1)
     assert b == (0xFFFF * 2) + 1
 
-    with pytest.raises(TypeError):
-        bitarray(0xFFFF).insert(0, bytearray.fromhex("FFFF"))
+    # now supports bitarray, bytearray, int
+    # with pytest.raises(TypeError):
+    #     bitarray(0xFFFF).insert(0, bytearray.fromhex("FFFF"))
 
     with pytest.raises(ValueError):
         bitarray(0XFFFF).insert(0, 3)
