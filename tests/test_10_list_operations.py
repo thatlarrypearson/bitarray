@@ -51,6 +51,25 @@ def test_list_operations():
     b.insert(0, 1)
     assert b == (0xFFFF * 2) + 1
 
+    b = bitarray(0x00, max_int_bits=8)
+    b.insert(0, bytearray.fromhex("FF"))
+    assert len(b) == 8
+    assert b.to_int() == 255
+
+    b = bitarray(0x00, max_int_bits=8)
+    b.insert(0, [1, 1, 1, 1, 1, 1, 1, 1, ])
+    assert len(b) == 8
+    assert b.to_int() == 255
+
+    with pytest.raises(ValueError):
+        b = bitarray(0x00, max_int_bits=8)
+        b.insert(0, [1, 1, 1, 1, 5, 1, 1, 1, ])
+
+    b = bitarray(0x00, max_int_bits=8)
+    b.insert(0, bitarray(0xFF, max_int_bits=8))
+    assert len(b) == 8
+    assert b.to_int() == 255
+
     # now supports bitarray, bytearray, int
     # with pytest.raises(TypeError):
     #     bitarray(0xFFFF).insert(0, bytearray.fromhex("FFFF"))

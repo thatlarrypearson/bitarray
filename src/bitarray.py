@@ -440,20 +440,30 @@ class bitarray():
 
             raise ValueError(f"append value ({value}) not 0 or 1")
 
+        else:
+            self.insert_list(value, index)
+
+        if len(self.data) > self.max_int_bits:
+            self.data = self.data[:self.max_int_bits]
+
+    def insert_list(self, value, index):
         if isinstance(value, bytearray):
             value = bitarray(value).data
 
         if isinstance(value, type(self)):
             value = value.data
 
-        if isinstance(value, list):
-            for item in value:
-                if not isinstance(item, int) or item not in {0, 1}:
-                    raise ValueError(f"list item ({item}) not 0 or 1 integer value")
-            self.data.insert(index, value)
-            return
+        if not isinstance(value, list):
+            raise TypeError(f"type {type(value)} not 0 or 1 OR a list containing values 0 or 1")
 
-        raise TypeError(f"type {type(value)} not 0 or 1 OR a list containing values 0 or 1")
+        for item in value:
+            if not isinstance(item, int) or item not in {0, 1}:
+                raise ValueError(f"list item ({item}) not 0 or 1 integer value")
+
+        value.reverse()
+
+        for item in value:
+            self.data.insert(index, item)
 
     def append(self, value:(int | list | bytearray)):
         if isinstance(value, int) and value in {0, 1}:

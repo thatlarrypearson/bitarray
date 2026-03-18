@@ -188,6 +188,9 @@ print(f"1 in bitarray(0xFFFFFFFF): {1 in bitarray(0xFFFFFFFF)}")
 print(f"len(bitarray(0xFF))): {len(bitarray(0xFF))}")
 print(f"len(bitarray(0xFFFFFFFF)): {len(bitarray(0xFFFFFFFF))}")
 
+print(f"len(bitarray(0xFF, max_int_bits=8)): len(bitarray(0xFF, max_int_bits=8))")
+print(f"len(bitarray(0xFF, max_int_bits=16)): len(bitarray(0xFF, max_int_bits=16))")
+
 # in-place operations
 #   - __setitem__(self, key, value) - in-place changing value
 value = bitarray(0xFF, max_int_bits=8)
